@@ -7,6 +7,9 @@ from openpyxl.styles import Border, Side
 # чтение файла Источник.XLS и создание временной таблицы istochnik
 istochnik = pd.read_excel("Источник.XLS", usecols=[0, 1, 3, 4, 6], header=None, names=["modul", "kanal", "tipe", "signal", "koment"])
 
+# замена символов в колонке signal
+istochnik["signal"] = istochnik["signal"].str.replace("ШВП", "SHVP").str.replace("е", "e").str.replace("с", "c").str.replace("о", "o").str.replace("р", "p").str.replace(".", "_")
+
 # создание файла Результат.xlsx
 wb = Workbook()
 wb.save("Результат.xlsx")
