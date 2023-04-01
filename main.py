@@ -1,32 +1,35 @@
+# импортируем необходимые библиотеки
 import pandas as pd
+from openpyxl import Workbook
+from openpyxl.styles import Border, Side
 
-# чтение файла с данными
-df = pd.read_excel('Источник.xls', header=None, usecols=[0, 1, 3, 4, 6])
+# чтение файла Источник.XLS и создание временной таблицы istochnik
+istochnik = pd.read_excel("Источник.XLS", usecols=[0, 1, 3, 4, 6], names=["modul", "kanal", "tipe", "signal", "koment"])
 
-# временная таблица
-istochnik = df.loc[:, ]
-istochnik.columns = ['modul', 'kanal', 'tipe', 'signal', 'koment']
+# создание файла Результат.xlsx
+wb = Workbook()
+wb.save("Результат.xlsx")
 
-# разбиение таблицы по критерию в колонке 'modul'
-tables = {}
-for modul in istochnik['modul'].unique():
-    tables[modul] = istochnik[istochnik['modul'] == modul]
+# получение уникальных значений из столбца modul
+modul_values = istochnik["modul"].unique()
 
-# запись таблицы в новый файл
-filename = 'Результат.xlsx'
-writer = pd.ExcelWriter(filename)
-for i, modul in enumerate(tables.keys()):
-    # запись таблицы
-    tables[modul].to_excel(writer, sheet_name=modul, index=False)
+# запись таблиц в файл Результат.xlsx
+with pd.ExcelWriter("Результат.xlsx") as writer:
+    for modul in modul_values:
+        # фильтрация таблицы istochnik по значению modul
+        filtered_table = istochnik.loc[istochnik["modul"] == modul, ["kanal", "tipe", "signal", "koment"]]
+        # запись таблицы в файл Результат.xlsx с именем листа modul
+        filtered_table.to_excel(writer, sheet_name=modul, header=False, index=False)
+        # получение последней записи (ячейки) в таблице и ее координат
+        last_cell = writer.sheets[modul].cell(row=writer.sheets[modul].max_row, column=writer.sheets[modul].max_column)
+        # создание стиля для обводки таблицы жирной линией
+        border_style = Border(left=Side(style='thick'),
+                              right=Side(style='thick'),
+                              top=Side(style='thick'),
+                              bottom=Side(style='thick'))
+        # применение стиля ко всем ячейкам в таблице
+        for row in writer.sheets[modul].rows:
+            for cell in row:
+                cell.border = border_style
 
-# добавление промежутков в 2 столбца
-#workbook = writer.book
-#worksheet = writer.sheets[f'Table {i + 1}']
-#    for j in range(len(tables[modul].columns) * 2 - 1):
-#worksheet.write(0, j + len(tables[modul].columns) + 1, '')
-
-# добавление линии
-#last_row = len(tables[modul].index) + 1
-#format = workbook.add_format({'bottom': True})
-#worksheet.conditional_format(f'A1:E{last_row}', {'type': 'formula', 'criteria': f'=$A1="{modul}"', 'format': format})
-writer.save()
+print("Готово!")
