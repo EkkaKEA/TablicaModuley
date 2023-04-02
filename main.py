@@ -50,7 +50,7 @@ with pd.ExcelWriter("Результат.xlsx") as writer:
         for row in cells_range:
             for cell in row:
                 cell.border = border_style
-
+        #cells_range.border = border_style
 
 
     # Разбиваем временную таблицу istochnik на несколько таблиц по критерию modul
